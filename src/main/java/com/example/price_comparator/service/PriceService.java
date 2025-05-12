@@ -18,7 +18,7 @@ public class PriceService {
     public List<PriceEntry> getAllPrices() {
         List<PriceEntry> allEntries = new ArrayList<>();
 
-        allEntries.addAll(csvLoader.loadPriceEntries("lidl_2025-05-08.cvs", "Lidl", LocalDate.of(2025, 5, 8)));
+        allEntries.addAll(csvLoader.loadPriceEntries("lidl_2025-05-08.csv", "Lidl", LocalDate.of(2025, 5, 8)));
         allEntries.addAll(csvLoader.loadPriceEntries("kaufland_2025-05-08.csv", "Kaufland", LocalDate.of(2025, 5, 8)));
 
         return allEntries;
