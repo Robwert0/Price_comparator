@@ -1,63 +1,57 @@
 package com.example.price_comparator.service;
 
 import com.example.price_comparator.model.DiscountedProduct;
-import com.example.price_comparator.model.PriceEntry;
 import com.example.price_comparator.util.CsvLoader;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
-import javax.swing.event.ListDataEvent;
-import java.security.PublicKey;
+import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
+@Slf4j
 public class DiscountService {
 
     @Autowired
     private CsvLoader csvLoader;
 
-    public List<DiscountedProduct> getBestDiscounts(LocalDate date){
-        // Today list of prices
-        List<PriceEntry> todayLidl = csvLoader.loadPriceEntries("lidl_2025-05-08.csv", "Lidl", date);
-        List<PriceEntry> todayKaufland = csvLoader.loadPriceEntries("kaufland_2025-05-08.csv", "Kaufland", date);
+    public List<DiscountedProduct> getBestCurrentDiscounts(LocalDate today){
+        List<DiscountedProduct> allDiscounts = new ArrayList<>();
+        try{
+            File folder = new File(getClass().getClassLoader().getResource("data").toURI());
+            File[] files = folder.listFiles();
 
-        // Prices of 3 days ago
-        List<PriceEntry> oldLidl = csvLoader.loadPriceEntries("lidl_2025-05-05.csv", "Lidl", date.minusDays(3));
-        List<PriceEntry> oldKaufland = csvLoader.loadPriceEntries("kaufland_2025-05-05.csv", "Kaufland", date.minusDays(3));
-
-        List<PriceEntry> currentEntries = new ArrayList<>();
-        currentEntries.addAll(todayLidl);
-        currentEntries.addAll(todayKaufland);
-
-        List<PriceEntry> oldEntries = new ArrayList<>();
-        oldEntries.addAll(oldLidl);
-        oldEntries.addAll(oldKaufland);
-
-        List<DiscountedProduct> bestDiscounts = new ArrayList<>();
-
-        for (PriceEntry current : currentEntries){
-            Optional<PriceEntry> oldMatch = oldEntries.stream()
-                    .filter(e -> e.getProduct().equals(current.getProduct()) &&
-                                    e.getStore().equals(current.getStore()))
-                    .findFirst();
-
-            if (oldMatch.isPresent()){
-                double oldPrice = oldMatch.get().getPrice();
-                double newPrice = current.getPrice();
-
-                if (newPrice < oldPrice){
-                    double discount = ((oldPrice-newPrice) / oldPrice) * 100;
-                    bestDiscounts.add(new DiscountedProduct(current.getProduct(), current.getStore(), oldPrice, newPrice, discount));
-
-                }
+            if (files == null){
+                log.warn("No CSV found in /data");
+                return allDiscounts;
             }
+
+            Pattern discountsPattern = Pattern.compile("^(lidl|kaufland|profi)_discounts_\\d{4}-\\d{2}-\\d{2}\\.csv$");
+
+            for (File file : files){
+                String fileName = file.getName();
+
+                if (!discountsPattern.matcher(fileName).matches()) continue;
+
+                String storeName = fileName.split("_")[0];
+
+                List<DiscountedProduct> storeDiscounts = csvLoader.loadDiscountedProducts(fileName, storeName, today);
+                allDiscounts.addAll(storeDiscounts);
+            }
+        }catch (Exception e){
+            log.warn("Error loading discount files {}", e.getMessage());
         }
-        bestDiscounts.sort((a, b) -> Double.compare(b.getDiscountedPercentage(), a.getDiscountedPercentage()));
 
-        return bestDiscounts;
+        // Sort items by ID
+        allDiscounts.sort(Comparator.comparing(dp -> dp.getProduct().getId()));
 
+        return allDiscounts;
     }
+
 }
