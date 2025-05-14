@@ -8,9 +8,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Product {
+    private String id;
     private String name;
-    private String brand;
     private String category;
-    private double grammage;  // Ex: 1, 500
+    private String brand;
+    private double quantity;  // Ex: 1, 500
     private String unit;      // Ex: litru, gram, bucata
 }

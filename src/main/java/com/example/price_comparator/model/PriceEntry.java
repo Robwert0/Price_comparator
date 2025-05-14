@@ -14,4 +14,5 @@ public class PriceEntry {
     private LocalDate date;
     private Product product;
     private double price;
+    private String currency;
 }

@@ -20,6 +20,6 @@ public class BasketController {
 
     @PostMapping("/optimize")
     public Map<String, PriceEntry> optimizeBasket(@RequestBody List<BasketItems> items) {
-        return optimizerService.optimizeBasket(items, LocalDate.of(2025, 5, 8));
+        return optimizerService.optimizeBasket(items, LocalDate.of(2025, 5, 1));
     }
 }

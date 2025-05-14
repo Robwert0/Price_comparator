@@ -1,9 +1,14 @@
 package com.example.price_comparator.util;
 
+import com.example.price_comparator.model.DiscountedProduct;
 import com.example.price_comparator.model.PriceEntry;
 import com.example.price_comparator.model.Product;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -28,23 +33,25 @@ public class CsvLoader {
                 return entries;
             }
 
-            CSVReader reader = new CSVReader(new InputStreamReader(is));
+            CSVParser parser = new CSVParserBuilder().withSeparator(';').build();
+            CSVReader reader = new CSVReaderBuilder(new InputStreamReader(is)).withCSVParser(parser).build();
             String[] line;
 
             // Skip header
             reader.readNext();
 
             while ((line = reader.readNext()) != null) {
-                String name = line[0];
-                String brand = line[1];
+                String id = line[0];
+                String name = line[1];
                 String category = line[2];
-                double price = Double.parseDouble(line[3]);
-                String unit = line[4];
-                double grammage = Double.parseDouble(line[5]);
+                String brand = line[3];
+                double quantity = Double.parseDouble(line[4]);
+                String unit = line[5];
+                double price = Double.parseDouble(line[6]);
+                String currency = line[7];
 
-
-                Product product = new Product(name, brand, category, grammage, unit);
-                PriceEntry entry = new PriceEntry(storeName, date, product, price);
+                Product product = new Product(id, name, category, brand, quantity, unit);
+                PriceEntry entry = new PriceEntry(storeName, date, product, price, currency);
                 entries.add(entry);
             }
 
@@ -53,6 +60,52 @@ public class CsvLoader {
         }
 
         return entries;
+    }
+
+    public List<DiscountedProduct> loadDiscountedProducts(String fileName, String storeName, LocalDate today){
+        List<DiscountedProduct> discountedProducts = new ArrayList<>();
+
+        try {
+            InputStream is = getClass().getClassLoader().getResourceAsStream("data/" + fileName);
+            if (is == null) {
+                log.warn("Discount file not found: {}", fileName);
+                return discountedProducts;
+            }
+
+            CSVParser parser = new CSVParserBuilder().withSeparator(';').build();
+            CSVReader reader = new CSVReaderBuilder(new InputStreamReader(is)).withCSVParser(parser).build();
+
+            String[] line;
+            reader.readNext();
+
+            while ((line = reader.readNext()) != null) {
+                String id = line[0];
+                String name = line[1];
+                String brand = line[2];
+                double quantity = Double.parseDouble(line[3]);
+                String unit = line[4];
+                String category = line[5];
+                LocalDate startDate = LocalDate.parse(line[6]);
+                LocalDate endDate = LocalDate.parse(line[7]);
+                int percentage = Integer.parseInt(line[8]);
+
+
+                // Only include discounts valid today
+                if (today.isBefore(startDate) || today.isAfter(endDate)) {
+                    continue;
+                }
+
+                Product product = new Product(id, name, category, brand, quantity, unit);
+                DiscountedProduct discountedProduct = new DiscountedProduct(product, storeName, startDate, endDate, percentage);
+
+                discountedProducts.add(discountedProduct);
+            }
+
+        } catch (Exception e) {
+            log.error("Error reading discount CSV '{}': {}", fileName, e.getMessage());
+        }
+
+        return discountedProducts;
     }
 
     public List<PriceEntry> loadHistoricalPrices(String productName, String store, String brand, String category){
@@ -68,7 +121,7 @@ public class CsvLoader {
             }
 
             // Regex pattern to match files like lidl_2025-05-05.csv or kaufland_2025-05-05.csv
-            Pattern filePattern = Pattern.compile("^(lidl|kaufland)_\\d{4}-\\d{2}-\\d{2}\\.csv$");
+            Pattern filePattern = Pattern.compile("^(lidl|kaufland|profi)_\\d{4}-\\d{2}-\\d{2}\\.csv$");
 
             for (File file: files){
                 String fileName = file.getName();
@@ -76,7 +129,7 @@ public class CsvLoader {
                 //Skip files that don't match the naming pattern
                 if (!filePattern.matcher(fileName).matches()) continue;
 
-                String storeName = fileName.startsWith("lidl") ? "Lidl" : "Kaufland";
+                String storeName = fileName.startsWith("lidl") ? "Lidl" : fileName.startsWith("Kaufland") ? "Kaufland" : "Profi";
 
                 //Extract date from file name
                 String dateStr = fileName.replaceAll(".*_(\\d{4}-\\d{2}-\\d{2})\\.csv", "$1");
