@@ -67,19 +67,24 @@ public class CsvLoader {
                 return allEntries;
             }
 
+            // Regex pattern to match files like lidl_2025-05-05.csv or kaufland_2025-05-05.csv
             Pattern filePattern = Pattern.compile("^(lidl|kaufland)_\\d{4}-\\d{2}-\\d{2}\\.csv$");
 
             for (File file: files){
                 String fileName = file.getName();
 
+                //Skip files that don't match the naming pattern
                 if (!filePattern.matcher(fileName).matches()) continue;
 
                 String storeName = fileName.startsWith("lidl") ? "Lidl" : "Kaufland";
+
+                //Extract date from file name
                 String dateStr = fileName.replaceAll(".*_(\\d{4}-\\d{2}-\\d{2})\\.csv", "$1");
                 LocalDate date = LocalDate.parse(dateStr);
 
                 List<PriceEntry> entries = loadPriceEntries(fileName, storeName, date);
                 for (PriceEntry entry :entries){
+                    // Match product name (required), and optionally store, brand, and category
                     boolean matches = entry.getProduct().getName().equalsIgnoreCase(productName);
                     if (store != null) matches &= entry.getStore().equalsIgnoreCase(store);
                     if (brand != null) matches &= entry.getProduct().getBrand().equalsIgnoreCase(brand);
