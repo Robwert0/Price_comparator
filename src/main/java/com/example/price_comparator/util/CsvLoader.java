@@ -138,10 +138,10 @@ public class CsvLoader {
                 List<PriceEntry> entries = loadPriceEntries(fileName, storeName, date);
                 for (PriceEntry entry :entries){
                     // Match product name (required), and optionally store, brand, and category
-                    boolean matches = entry.getProduct().getName().equalsIgnoreCase(productName);
-                    if (store != null) matches &= entry.getStore().equalsIgnoreCase(store);
-                    if (brand != null) matches &= entry.getProduct().getBrand().equalsIgnoreCase(brand);
-                    if (category != null) matches &= entry.getProduct().getCategory().equalsIgnoreCase(category);
+                    boolean matches = entry.getProduct().getName().toLowerCase().contains(productName.toLowerCase());
+                    if (store != null) matches &= entry.getStore().toLowerCase().contains(store.toLowerCase());
+                    if (brand != null) matches &= entry.getProduct().getBrand().toLowerCase().contains(brand.toLowerCase());
+                    if (category != null) matches &= entry.getProduct().getCategory().toLowerCase().contains(category.toLowerCase());
 
                     if (matches) {
                         allEntries.add(entry);

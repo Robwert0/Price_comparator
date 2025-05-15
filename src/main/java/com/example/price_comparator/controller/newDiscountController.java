@@ -1,5 +1,6 @@
 package com.example.price_comparator.controller;
 
+import com.example.price_comparator.model.DiscountedProduct;
 import com.example.price_comparator.model.PriceEntry;
 import com.example.price_comparator.service.NewDiscountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,7 @@ public class newDiscountController {
     private NewDiscountService newDiscountService;
 
     @GetMapping("/new")
-    public List<PriceEntry> getNewDiscounts(){
-        LocalDate today = LocalDate.of(2025, 5, 8);
-        LocalDate yesterday = LocalDate.of(2025, 5, 7);
-
-        return newDiscountService.getNewDiscounts(today, yesterday);
+    public List<DiscountedProduct> getNewDiscounts() {
+        return newDiscountService.getNewDiscounts(LocalDate.of(2025, 05, 04));
     }
 }
