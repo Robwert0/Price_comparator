@@ -15,4 +15,10 @@ public class PriceEntry {
     private Product product;
     private double price;
     private String currency;
+
+    public double getValuePerUnit(){
+        double quantity = product.getQuantity();
+        if (quantity == 0) return Double.MAX_VALUE; // Avoid division by zero
+        return price/quantity;
+    }
 }
