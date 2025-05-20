@@ -1,7 +1,9 @@
 package com.example.price_comparator.service;
 
+import com.example.price_comparator.model.PriceAlert;
 import com.example.price_comparator.model.PriceEntry;
 import com.example.price_comparator.util.CsvLoader;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +33,7 @@ public class PriceService {
         return allEntries;
     }
 
-    public List<PriceEntry> getBestValueAlternative(String productName, LocalDate date){
+    public List<PriceEntry> getBestValueAlternative(String productName){
         List<PriceEntry> allPrices = getAllPrices();
 
         Optional<PriceEntry> original = allPrices.stream()
@@ -49,12 +51,28 @@ public class PriceService {
                 .collect(Collectors.toList());
     }
 
-    public PriceEntry getBestBuy(String productName, LocalDate date){
+    public PriceEntry getBestBuy(String productName){
         List<PriceEntry> allPrices = getAllPrices();
 
         return allPrices.stream()
                 .filter(p -> p.getProduct().getName().toLowerCase().contains(productName.toLowerCase()))
                 .min(Comparator.comparing(PriceEntry::getValuePerUnit))
                 .orElse(null);
+    }
+
+    public List<PriceEntry> checkAlerts(PriceAlert alert){
+        List<PriceEntry> allPrices = getAllPrices();
+
+        return allPrices.stream()
+                .filter(p -> p.getProduct().getName().toLowerCase().contains(alert.getProductName().toLowerCase()))
+                .filter(p -> p.getPrice() <= alert.getTargetPrice())
+                .collect(Collectors.toList());
+    }
+
+    @Getter
+    private final List<PriceAlert> alerts = new ArrayList<>();
+
+    public void addAlert(PriceAlert alert){
+        alerts.add(alert);
     }
 }

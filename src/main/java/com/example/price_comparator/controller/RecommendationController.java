@@ -24,25 +24,15 @@ public class RecommendationController {
 
     @GetMapping("/value")
     public ResponseEntity<List<PriceEntry>> getBestValueRecommendation(
-            @RequestParam String productName,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+            @RequestParam String productName){
 
-        if (date ==null){
-            date = LocalDate.now();
-        }
-
-        return ResponseEntity.ok(priceService.getBestValueAlternative(productName, date));
+        return ResponseEntity.ok(priceService.getBestValueAlternative(productName));
     }
 
     @GetMapping("/best-buy")
     public ResponseEntity<PriceEntry> getBestBuy(
-            @RequestParam String productName,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+            @RequestParam String productName){
 
-        if (date ==  null){
-            date = LocalDate.now();
-        }
-
-        return ResponseEntity.ok(priceService.getBestBuy(productName, date));
+        return ResponseEntity.ok(priceService.getBestBuy(productName));
     }
 }
