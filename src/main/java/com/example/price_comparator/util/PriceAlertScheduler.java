@@ -25,6 +25,11 @@ public class PriceAlertScheduler {
 
         List<PriceAlert> alerts = priceService.getAlerts();
 
+        log.info("All registered alerts:");
+        for (PriceAlert a : alerts) {
+            log.info(" -> {}", a);
+        }
+
         for (PriceAlert alert : alerts){
             List<PriceEntry> matchedEntries = priceService.checkAlerts(alert);
 

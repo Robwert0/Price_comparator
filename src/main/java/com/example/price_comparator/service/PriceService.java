@@ -5,6 +5,7 @@ import com.example.price_comparator.model.PriceEntry;
 import com.example.price_comparator.util.CsvLoader;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PriceService {
@@ -74,5 +76,6 @@ public class PriceService {
 
     public void addAlert(PriceAlert alert){
         alerts.add(alert);
+        System.out.println(alert);
     }
 }
