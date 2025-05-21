@@ -31,7 +31,8 @@ public class EmailService {
         for (PriceEntry entry : matchingEntries) {
             messageBuilder.append("Store: ").append(entry.getStore()).append("\n");
             messageBuilder.append("Price: ").append(entry.getPrice()).append("\n");
-            messageBuilder.append("Product: ").append(entry.getProduct().getName()).append("\n\n");
+            messageBuilder.append("Product: ").append(entry.getProduct().getName()).append("\n");
+            messageBuilder.append("Date: ").append(entry.getDate()).append("\n\n");
         }
 
         sendPriceAlert(alert.getUserEmail(), "Price Drop Alert: " + alert.getProductName(), messageBuilder.toString());
