@@ -21,6 +21,6 @@ public class DiscountController {
     @GetMapping("/best")
     public ResponseEntity<List<DiscountedProduct>> getBestDscounts(){
         LocalDate date = LocalDate.of(2025, 5, 2);
-        return ResponseEntity.ok(discountService.getBestCurrentDiscounts(date));
+        return ResponseEntity.ok(discountService.getBestDiscountPerProduct(date));
     }
 }

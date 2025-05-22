@@ -1,5 +1,6 @@
 package com.example.price_comparator.service;
 
+import ch.qos.logback.core.sift.DefaultDiscriminator;
 import com.example.price_comparator.model.DiscountedProduct;
 import com.example.price_comparator.util.CsvLoader;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -48,10 +51,23 @@ public class DiscountService {
             log.warn("Error loading discount files {}", e.getMessage());
         }
 
-        // Sort items by ID
-        allDiscounts.sort(Comparator.comparing(dp -> dp.getProduct().getId()));
-
         return allDiscounts;
+    }
+
+    public List<DiscountedProduct> getBestDiscountPerProduct(LocalDate today) {
+        List<DiscountedProduct> allDiscounts = getBestCurrentDiscounts(today);
+
+        Map<String, DiscountedProduct> bestDiscountsByProduct = allDiscounts.stream()
+                .collect(Collectors.toMap(
+                        dp -> dp.getProduct().getId(),  // Key: product ID
+                        dp -> dp,                       // Value: DiscountedProduct
+                        (dp1, dp2) -> dp1.getPercentageOfDiscount() > dp2.getPercentageOfDiscount() ? dp1 : dp2 // Keep max discount
+                ));
+
+        List<DiscountedProduct> bestDiscounts = new ArrayList<>(bestDiscountsByProduct.values());
+        bestDiscounts.sort(Comparator.comparing(dp-> dp.getProduct().getId()));
+
+        return bestDiscounts;
     }
 
 }
